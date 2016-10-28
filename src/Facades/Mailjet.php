@@ -1,4 +1,4 @@
-<?php namespace Sboo\Laravel5Mailjet\Facades;
+<?php namespace Tberk\Laravel5Mailjet\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
