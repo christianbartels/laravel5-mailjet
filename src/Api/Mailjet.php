@@ -1,4 +1,4 @@
-<?php namespace Sboo\Laravel5Mailjet\Api;
+<?php namespace Tberk\Laravel5Mailjet\Api;
 
 
 /**
