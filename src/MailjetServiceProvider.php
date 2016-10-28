@@ -1,4 +1,4 @@
-<?php namespace Sboo\Laravel5Mailjet;
+<?php namespace Tberk\Laravel5Mailjet;
 
 use Sboo\Laravel5Mailjet\Api\Mailjet;
 use Swift_Mailer;
