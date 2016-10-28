@@ -1,6 +1,6 @@
 <?php namespace Tberk\Laravel5Mailjet;
 
-use Sboo\Laravel5Mailjet\Api\Mailjet;
+use Tberk\Laravel5Mailjet\Api\Mailjet;
 use Swift_Mailer;
 use Illuminate\Mail\Mailer;
 use Illuminate\Support\ServiceProvider;
