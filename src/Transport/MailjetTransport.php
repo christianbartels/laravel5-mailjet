@@ -1,4 +1,4 @@
-<?php namespace Sboo\Laravel5Mailjet\Transport;
+<?php namespace Tberk\Laravel5Mailjet\Transport;
 
 use Swift_Transport;
 use GuzzleHttp\Client;
