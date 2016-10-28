@@ -1,10 +1,8 @@
 <?php namespace Sboo\Laravel5Mailjet\Transport;
 
-use GuzzleHttp\Post\PostBody;
 use Swift_Transport;
 use GuzzleHttp\Client;
 use Swift_Mime_Message;
-use GuzzleHttp\Post\PostFile;
 use Swift_Events_EventListener;
 
 class MailjetTransport implements Swift_Transport {
@@ -76,7 +74,7 @@ class MailjetTransport implements Swift_Transport {
         $client = $this->getHttpClient();
 
         return $client->post($this->url, ['auth' => [$this->key, $this->secret],
-            'body' => $this->getBody($message)
+            'form_params' => $this->getBody($message)
         ]);
     }
 
@@ -134,12 +132,15 @@ class MailjetTransport implements Swift_Transport {
      * @return PostBody
      */
     protected function getBody(Swift_Mime_Message $message) {
-        $body = new PostBody();
-        $body->setField('from', $this->getFrom($message));
-        $body->setField('to',   $this->getTo($message) );
-        $body->setField('subject',   $message->getSubject() );
-
         $messageHtml = $message->getBody();
+        $body = [
+            'from' => $this->getFrom($message),           
+            'subject' => $message->getSubject(),
+            'html' => $messageHtml,
+            'to' => $this->getTo($message)
+        ];
+        
+        /*
         if($message->getChildren()) {
             foreach($message->getChildren() as $child) {
 
@@ -175,7 +176,8 @@ class MailjetTransport implements Swift_Transport {
                 }
             }
         }
-        $body->setField('html',   $messageHtml );
+        */
+        
         return $body;
     }
 
