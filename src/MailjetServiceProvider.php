@@ -72,16 +72,8 @@ class MailjetServiceProvider extends ServiceProvider {
     {
         $mailer->setContainer($app);
 
-        /* setLogger deprecated.
-	if ($app->bound('log'))
-        {
-            $mailer->setLogger($app['log']->getMonolog());
-        }
-	*/
-
-        if ($app->bound('queue'))
-        {
-            $mailer->setQueue($app['queue.connection']);
+        if ($app->bound('queue')) {
+            $mailer->setQueue($app['queue']);
         }
     }
 
