@@ -5,7 +5,8 @@ use GuzzleHttp\Client;
 use Swift_Mime_Message;
 use Swift_Events_EventListener;
 
-class MailjetTransport implements Swift_Transport {
+class MailjetTransport implements Swift_Transport
+{
 
     /**
      * The Mailjet API key.
@@ -31,15 +32,15 @@ class MailjetTransport implements Swift_Transport {
     /**
      * Create a new Mailgun transport instance.
      *
-     * @param  string  $key
-     * @param  string  $secret
+     * @param  string $key
+     * @param  string $secret
      * @return void
      */
     public function __construct($key, $secret)
     {
         $this->key = $key;
         $this->secret = $secret;
-        $this->url = 'https://api.mailjet.com/v3/send/message';
+        $this->url = 'https://api.mailjet.com/v3/send';
     }
 
     /**
@@ -72,9 +73,9 @@ class MailjetTransport implements Swift_Transport {
     public function send(Swift_Mime_Message $message, &$failedRecipients = null)
     {
         $client = $this->getHttpClient();
-
-        return $client->post($this->url, ['auth' => [$this->key, $this->secret],
-            'form_params' => $this->getBody($message)
+        return $client->post($this->url, [
+            'json' => $this->getBody($message),
+            'auth' => [$this->key, $this->secret]
         ]);
     }
 
@@ -89,7 +90,7 @@ class MailjetTransport implements Swift_Transport {
     /**
      * Get the "to" payload field for the API request.
      *
-     * @param  \Swift_Mime_Message  $message
+     * @param  \Swift_Mime_Message $message
      * @return array
      */
     protected function getTo(Swift_Mime_Message $message)
@@ -97,12 +98,11 @@ class MailjetTransport implements Swift_Transport {
         $formatted = [];
 
         $contacts = array_merge(
-            (array) $message->getTo(), (array) $message->getCc(), (array) $message->getBcc()
+            (array)$message->getTo(), (array)$message->getCc(), (array)$message->getBcc()
         );
 
-        foreach ($contacts as $address => $display)
-        {
-            $formatted[] = $display ? $display." <$address>" : $address;
+        foreach ($contacts as $address => $display) {
+            $formatted[] = $display ? $display . " <$address>" : $address;
         }
 
         return implode(',', $formatted);
@@ -111,15 +111,14 @@ class MailjetTransport implements Swift_Transport {
     /**
      * Get the "from" payload field for the API request.
      *
-     * @param  \Swift_Mime_Message  $message
+     * @param  \Swift_Mime_Message $message
      * @return array
      */
     protected function getFrom(Swift_Mime_Message $message)
     {
         $formatted = [];
-        foreach ($message->getFrom() as $address => $display)
-        {
-            $formatted[] = $display ? $display." <$address>" : $address;
+        foreach ($message->getFrom() as $address => $display) {
+            $formatted[] = $display ? $display . " <$address>" : $address;
         }
 
         return $formatted[0];
@@ -131,53 +130,48 @@ class MailjetTransport implements Swift_Transport {
      * @param Swift_Mime_Message $message
      * @return PostBody
      */
-    protected function getBody(Swift_Mime_Message $message) {
+    protected function getBody(Swift_Mime_Message $message)
+    {
         $messageHtml = $message->getBody();
         $body = [
-            'from' => $this->getFrom($message),           
-            'subject' => $message->getSubject(),
-            'html' => $messageHtml,
-            'to' => $this->getTo($message)
+            'FromEmail' => implode(',', array_keys($message->getFrom())),
+            'FromName' => implode(',', $message->getFrom()),
+            'Subject' => $message->getSubject(),
+            'Recipients' => [[
+                'Email' => implode(',', array_keys($message->getTo())),
+                'Name' => implode(',', $message->getTo())
+            ]],
+            'Html-part' => $messageHtml
         ];
-        
-        /*
-        if($message->getChildren()) {
-            foreach($message->getChildren() as $child) {
 
-                if(str_contains($messageHtml, $child->getId())) {
-                    $messageHtml = str_replace($child->getId(),$child->getFilename(),$messageHtml);
-                    $body->addFile(new PostFile(
-                            'inlineattachment',
-                            $child->getBody(),
-                            $child->getFilename(),
-                            ['Content-Type' => $child->getContentType()]
-                        )
-                    );
-                } else {
-                    switch(get_class($child)) {
-                        case 'Swift_Attachment':
-                        case 'Swift_Image':
-                            $body->addFile(new PostFile(
-                                    'attachment',
-                                    $child->getBody(),
-                                    $child->getFilename(),
-                                    ['Content-Type' => $child->getContentType()]
-                                )
-                            );
-                            break;
-                        case 'Swift_MimePart':
-                            switch($child->getContentType()){
-                                case 'text/plain':
-                                    $body->setField('text',   $child->getBody() );
-                                    break;
-                            }
-                            break;
-                    }
+        if ($message->getChildren()) {
+            foreach ($message->getChildren() as $child) {
+                switch (get_class($child)) {
+                    case 'Swift_Attachment':
+                    case 'Swift_Image':
+                        if (!array_key_exists('Attachments', $body)) {
+                            $body['Attachments'] = [];
+                        }
+                        array_push($body['Attachments'], [
+                            'Content-Type' => $child->getContentType(),
+                            'Filename' => $child->getFilename(),
+                            'content' => base64_encode($child->getBody())
+                        ]);
+                        break;
+                    case 'Swift_MimePart':
+                        switch ($child->getContentType()) {
+                            case 'text/plain':
+                                $body['Text-part'] = $child->getBody();
+                                break;
+                            case 'text/html':
+                                $body['Html-part'] = $child->getBody();
+                                break;
+                        }
+                        break;
                 }
             }
         }
-        */
-        
+
         return $body;
     }
 
@@ -204,7 +198,7 @@ class MailjetTransport implements Swift_Transport {
     /**
      * Set the API key being used by the transport.
      *
-     * @param  string  $key
+     * @param  string $key
      * @return void
      */
     public function setKey($key)
@@ -225,7 +219,7 @@ class MailjetTransport implements Swift_Transport {
     /**
      * Set the API secret being used by the transport.
      *
-     * @param  string  $secret
+     * @param  string $secret
      * @return void
      */
     public function setSecret($secret)
