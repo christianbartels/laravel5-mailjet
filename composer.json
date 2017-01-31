@@ -1,12 +1,12 @@
 {
-    "name": "tberk/laravel5-mailjet",
+    "name": "christianbartels/laravel5-mailjet",
     "description": "Mailjet driver for Laravel 5",
     "keywords": ["laravel", "laravel 5", "mailjet", "api", "v3"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Tuğberk Kılıç",
-            "email": "kilictugberk@gmail.com"
+            "name": "Christian Schätzlein",
+            "email": "c.schaetzlein@bequadrat.de"
         }
     ],
     "require": {
