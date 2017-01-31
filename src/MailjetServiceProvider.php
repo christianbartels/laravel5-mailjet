@@ -71,9 +71,9 @@ class MailjetServiceProvider extends ServiceProvider {
     protected function setMailerDependencies($mailer, $app)
     {
         $mailer->setContainer($app);
-
+		
         if ($app->bound('queue')) {
-            $mailer->setQueue($app['queue']);
+            $mailer->setQueue(version_compare($app::VERSION,'5.3','<') ? $app['queue.connection'] : $app['queue']);
         }
     }
 
