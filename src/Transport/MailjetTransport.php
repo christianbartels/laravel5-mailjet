@@ -143,7 +143,15 @@ class MailjetTransport implements Swift_Transport
             ]],
             'Html-part' => $messageHtml
         ];
-
+        
+        if($message->getReplyTo()) {
+        	$body['Headers']=[
+        		'Reply-To' => is_array($message->getReplyTo()) 
+        			? current($message->getReplyTo()). ' <'. key($message->getReplyTo()).'>' 
+        			: $message->getReplyTo();
+        	];
+		}
+		
         if ($message->getChildren()) {
             foreach ($message->getChildren() as $child) {
                 switch (get_class($child)) {
