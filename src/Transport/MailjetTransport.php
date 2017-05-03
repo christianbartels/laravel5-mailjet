@@ -148,7 +148,7 @@ class MailjetTransport implements Swift_Transport
         	$body['Headers']=[
         		'Reply-To' => is_array($message->getReplyTo()) 
         			? current($message->getReplyTo()). ' <'. key($message->getReplyTo()).'>' 
-        			: $message->getReplyTo();
+        			: $message->getReplyTo()
         	];
 		}
 		
